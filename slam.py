@@ -229,12 +229,12 @@ if __name__ == "__main__":
     if config["Results"]["save_results"]:
         mkdir_p(config["Results"]["save_dir"])
         current_datetime = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        if config["Dataset"]["dataset_path"] is not None:
+        try:
             path = config["Dataset"]["dataset_path"].split("/")
             save_dir = os.path.join(
                 config["Results"]["save_dir"], path[-3] + "_" + path[-2], current_datetime
             )
-        else:
+        except KeyError:
             save_dir = os.path.join(config["Results"]["save_dir"], config["Dataset"]["type"], current_datetime)
         tmp = args.config
         tmp = tmp.split(".")[0]
