@@ -8,25 +8,23 @@ class CameraDataSubscriber(Node):
         super().__init__('camera_data_subscriber')
         self.image_subscriber = self.create_subscription(
             Image,
-            config["Dataset"]["image_topic"],
+            config["ROS"]["image_topic"],
             self.image_callback,
             1
         )
         self.camera_info_subscriber = self.create_subscription(
             CameraInfo,
-            config["Dataset"]["camera_info_topic"],
+            config["ROS"]["camera_info_topic"],
             self.camera_info_callback,
             1
         )
-        try:
+        if config["ROS"]["has_depth"]:
             self.depth_subscriber = self.create_subscription(
                 Image,
-                config["Dataset"]["depth_topic"],
+                config["ROS"]["depth_topic"],
                 self.depth_callback,
                 1
             )
-        except KeyError:
-            self.depth_subscriber = None
         self.is_set_camera_info = False
         self.camera_model = PinholeCameraModel()
 

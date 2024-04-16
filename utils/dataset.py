@@ -522,7 +522,7 @@ class RosDepthDataset(BaseDataset):
         )
 
         # depth parameters
-        self.has_depth = True
+        self.has_depth = config["ROS"]["has_depth"]
 
     def __del__(self):
         rclpy.shutdown()
@@ -588,7 +588,7 @@ class RosMonoDataset(BaseDataset):
         )
 
         # depth parameters
-        self.has_depth = False
+        self.has_depth = config["ROS"]["has_depth"]
 
     def __del__(self):
         rclpy.shutdown()
