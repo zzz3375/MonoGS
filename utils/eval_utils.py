@@ -65,7 +65,7 @@ def evaluate_evo(poses_gt, poses_est, plot_dir, label, monocular=False):
     return ape_stat
 
 
-def eval_ate(frames, kf_ids, save_dir, iterations, final=False, monocular=False):
+def eval_ate(frames, kf_ids, save_dir, iterations, final=False, monocular=False, has_gt=True):
     trj_data = dict()
     latest_frame_idx = kf_ids[-1] + 2 if final else kf_ids[-1] + 1
     trj_id, trj_est, trj_gt = [], [], []
@@ -102,15 +102,19 @@ def eval_ate(frames, kf_ids, save_dir, iterations, final=False, monocular=False)
     ) as f:
         json.dump(trj_data, f, indent=4)
 
-    ate = evaluate_evo(
-        poses_gt=trj_gt_np,
-        poses_est=trj_est_np,
-        plot_dir=plot_dir,
-        label=label_evo,
-        monocular=monocular,
-    )
-    wandb.log({"frame_idx": latest_frame_idx, "ate": ate})
-    return ate
+
+    if has_gt:
+        ate = evaluate_evo(
+            poses_gt=trj_gt_np,
+            poses_est=trj_est_np,
+            plot_dir=plot_dir,
+            label=label_evo,
+            monocular=monocular,
+        )
+        wandb.log({"frame_idx": latest_frame_idx, "ate": ate})
+        return ate
+    else:
+        return -1
 
 
 def eval_rendering(

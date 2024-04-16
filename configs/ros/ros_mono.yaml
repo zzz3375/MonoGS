@@ -6,6 +6,7 @@ Results:
   use_gui: True
   eval_rendering: False
   use_wandb: False
+  has_gt: False
 
 Dataset:
   sensor_type: 'monocular'

@@ -67,6 +67,7 @@ class SLAM:
         q_vis2main = mp.Queue() if self.use_gui else FakeQueue()
 
         self.config["Results"]["save_dir"] = save_dir
+        self.has_gt = config["Results"]["has_gt"]
         self.config["Training"]["monocular"] = self.monocular
 
         self.frontend = FrontEnd(self.config)
@@ -128,6 +129,7 @@ class SLAM:
                 0,
                 final=True,
                 monocular=self.monocular,
+                has_gt=self.has_gt
             )
 
             rendering_result = eval_rendering(

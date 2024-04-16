@@ -48,6 +48,7 @@ class FrontEnd(mp.Process):
         self.save_results = self.config["Results"]["save_results"]
         self.save_trj = self.config["Results"]["save_trj"]
         self.save_trj_kf_intv = self.config["Results"]["save_trj_kf_intv"]
+        self.has_gt = self.config["Results"]["has_gt"]
 
         self.tracking_itr_num = self.config["Training"]["tracking_itr_num"]
         self.kf_interval = self.config["Training"]["kf_interval"]
@@ -353,6 +354,7 @@ class FrontEnd(mp.Process):
                             0,
                             final=True,
                             monocular=self.monocular,
+                            has_gt=self.has_gt
                         )
                         save_gaussians(
                             self.gaussians, self.save_dir, "final", final=True
@@ -471,6 +473,7 @@ class FrontEnd(mp.Process):
                         self.save_dir,
                         cur_frame_idx,
                         monocular=self.monocular,
+                        has_gt=self.has_gt
                     )
                 toc.record()
                 torch.cuda.synchronize()
