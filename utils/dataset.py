@@ -15,6 +15,11 @@ try:
 except Exception:
     pass
 
+import threading
+import rclpy
+from cv_bridge import CvBridge
+from utils.ros_utils import CameraDataSubscriber, start_node
+
 
 class ReplicaParser:
     def __init__(self, input_folder):
@@ -484,6 +489,131 @@ class RealsenseDataset(BaseDataset):
         )
         return image, None, pose
 
+class RosDepthDataset(BaseDataset):
+    def __init__(self, args, path, config):
+        super().__init__(args, path, config)
+        rclpy.init(args=None)
+        self.node = CameraDataSubscriber(config)
+        self.ros_thread = threading.Thread(target=start_node, args=(self.node,))
+        self.ros_thread.start()
+        self.bridge = CvBridge()
+
+        while not self.node.is_set_camera_info:
+            continue
+
+        camera_model = self.node.get_camera_model()
+        self.fx = camera_model.fx()
+        self.fy = camera_model.fy()
+        self.cx = camera_model.cx()
+        self.cy = camera_model.cy()
+        self.width = camera_model.width
+        self.height = camera_model.height
+        self.h, self.w = self.height, self.width
+        self.fovx = focal2fov(self.fx, self.width)
+        self.fovy = focal2fov(self.fy, self.height)
+        self.K = np.array(
+            [[self.fx, 0.0, self.cx], [0.0, self.fy, self.cy], [0.0, 0.0, 1.0]]
+        )
+
+        self.disorted = True
+        self.dist_coeffs = np.asarray(camera_model.D)
+        self.map1x, self.map1y = cv2.initUndistortRectifyMap(
+            self.K, self.dist_coeffs, np.eye(3), self.K, (self.w, self.h), cv2.CV_32FC1
+        )
+
+        # depth parameters
+        self.has_depth = True
+
+    def __del__(self):
+        rclpy.shutdown()
+        self.ros_thread.join()
+
+    def __getitem__(self, idx):
+        if not self.node.is_set_camera_info:
+            return None, None, None
+
+        pose = torch.eye(4, device=self.device, dtype=self.dtype)
+
+        image_msg = self.node.get_image_msg()
+        image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        if self.disorted:
+            image = cv2.remap(image, self.map1x, self.map1y, cv2.INTER_LINEAR)
+
+        image = (
+            torch.from_numpy(image / 255.0)
+            .clamp(0.0, 1.0)
+            .permute(2, 0, 1)
+            .to(device=self.device, dtype=self.dtype)
+        )
+
+        depth_msg = self.node.get_depth_msg()
+        if depth_msg is not None:
+            depth = self.bridge.imgmsg_to_cv2(depth_msg, "passthrough")
+            depth = np.array(depth) / 1000.0
+        else:
+            depth = None
+        return image, depth, pose
+
+class RosMonoDataset(BaseDataset):
+    def __init__(self, args, path, config):
+        super().__init__(args, path, config)
+        rclpy.init(args=None)
+        self.node = CameraDataSubscriber(config)
+        self.ros_thread = threading.Thread(target=start_node, args=(self.node,))
+        self.ros_thread.start()
+        self.bridge = CvBridge()
+
+        while not self.node.is_set_camera_info:
+            continue
+
+        camera_model = self.node.get_camera_model()
+        self.fx = camera_model.fx()
+        self.fy = camera_model.fy()
+        self.cx = camera_model.cx()
+        self.cy = camera_model.cy()
+        self.width = camera_model.width
+        self.height = camera_model.height
+        self.h, self.w = self.height, self.width
+        self.fovx = focal2fov(self.fx, self.width)
+        self.fovy = focal2fov(self.fy, self.height)
+        self.K = np.array(
+            [[self.fx, 0.0, self.cx], [0.0, self.fy, self.cy], [0.0, 0.0, 1.0]]
+        )
+
+        self.disorted = True
+        self.dist_coeffs = np.asarray(camera_model.D)
+        self.map1x, self.map1y = cv2.initUndistortRectifyMap(
+            self.K, self.dist_coeffs, np.eye(3), self.K, (self.w, self.h), cv2.CV_32FC1
+        )
+
+        # depth parameters
+        self.has_depth = False
+
+    def __del__(self):
+        rclpy.shutdown()
+        self.ros_thread.join()
+
+    def __getitem__(self, idx):
+        if not self.node.is_set_camera_info:
+            return None, None, None
+
+        pose = torch.eye(4, device=self.device, dtype=self.dtype)
+
+        image_msg = self.node.get_image_msg()
+        image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        if self.disorted:
+            image = cv2.remap(image, self.map1x, self.map1y, cv2.INTER_LINEAR)
+
+        image = (
+            torch.from_numpy(image / 255.0)
+            .clamp(0.0, 1.0)
+            .permute(2, 0, 1)
+            .to(device=self.device, dtype=self.dtype)
+        )
+
+        return image, None, pose
 
 def load_dataset(args, path, config):
     if config["Dataset"]["type"] == "tum":
@@ -494,5 +624,9 @@ def load_dataset(args, path, config):
         return EurocDataset(args, path, config)
     elif config["Dataset"]["type"] == "realsense":
         return RealsenseDataset(args, path, config)
+    elif config["Dataset"]["type"] == "ros_depth":
+        return RosDepthDataset(args, path, config)
+    elif config["Dataset"]["type"] == "ros_mono":
+        return RosMonoDataset(args, path, config)
     else:
         raise ValueError("Unknown dataset type")
