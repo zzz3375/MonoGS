@@ -1,6 +1,7 @@
 import csv
 import glob
 import os
+import json
 
 import cv2
 import numpy as np
@@ -191,6 +192,61 @@ class EuRoCParser:
 
             frames.append(frame)
         self.frames = frames
+
+
+class RoverParser:
+    def __init__(self, config, metadata):
+        color_stream_name = config["Rover"]["color_stream_name"]
+        c_fps = metadata[color_stream_name]["fps"]
+        current_dir = metadata["currentDir"]
+        color_video_path = current_dir + "/" + color_stream_name + metadata[color_stream_name]["containerFormat"]
+        color_video_tc_path = current_dir + "/" + color_stream_name + "_timecode.txt"
+        color_video_cap = cv2.VideoCapture(color_video_path)
+        self.color_imgs = []
+        self.color_imgs_tc = []
+        self.depth_imgs = []
+        self.depth_imgs_tc = []
+
+        while color_video_cap.isOpened():
+            ret, frame = color_video_cap.read()
+            if not ret:
+                break
+            self.color_imgs.append(frame)
+        color_video_cap.release()
+        with open(color_video_tc_path, "r") as f:
+            f.readline()
+            lines = f.readlines()
+            for line in lines:
+                self.color_imgs_tc.append(float(line))
+        self.n_imgs = len(self.color_imgs)
+
+        if config["Rover"]["has_depth"]:
+            depth_stream_name = config["Rover"]["depth_stream_name"]
+            d_fps = metadata[depth_stream_name]["fps"]
+            assert abs(c_fps - d_fps) < 10e-6
+            depth_imgs_dir = current_dir + "/" + depth_stream_name
+            depth_imgs_tc_path = current_dir + "/" + depth_stream_name + "_timecode.txt"
+
+            depth_imgs_path = sorted(glob.glob(f"{depth_imgs_dir}/*{metadata[depth_stream_name]['imageFormat']}"))
+            self.depth_imgs = [cv2.imread(img_path, cv2.IMREAD_UNCHANGED) for img_path in depth_imgs_path]
+            with open(depth_imgs_tc_path, "r") as f:
+                f.readline()
+                lines = f.readlines()
+                for line in lines:
+                    self.depth_imgs_tc.append(float(line))
+
+            timecode_th = config["Rover"]["timecode_th"]
+            while True:
+                if self.color_imgs_tc[0] - self.depth_imgs_tc[0] > timecode_th:
+                    self.depth_imgs.pop(0)
+                    self.depth_imgs_tc.pop(0)
+                elif self.depth_imgs_tc[0] - self.color_imgs_tc[0] > timecode_th:
+                    self.color_imgs.pop(0)
+                    self.color_imgs_tc.pop(0)
+                else:
+                    break
+
+            self.n_imgs = min(len(self.color_imgs), len(self.depth_imgs))
 
 
 class BaseDataset(torch.utils.data.Dataset):
@@ -615,6 +671,87 @@ class RosMonoDataset(BaseDataset):
 
         return image, None, pose
 
+class Rover(BaseDataset):
+    def __init__(self, args, path, config):
+        super().__init__(args, path, config)
+        metadata_path = config["Rover"]["metadata"]
+        with open(metadata_path, "r") as f:
+            self.metadata = json.load(f)
+
+        color_stream = config["Rover"]["color_stream_name"]
+        assert self.metadata[color_stream]["isEnable"]
+        assert self.metadata[color_stream]["isSaveVideo"]
+        parser = RoverParser(config, self.metadata)
+        self.num_imgs = parser.n_imgs
+        self.color_imgs = parser.color_imgs
+        self.depth_imgs = parser.depth_imgs
+
+        self.cam_info = self.metadata[color_stream]
+        self.fx = self.metadata[color_stream]["fx"]
+        self.fy = self.metadata[color_stream]["fy"]
+        self.cx = self.metadata[color_stream]["cx"]
+        self.cy = self.metadata[color_stream]["cy"]
+        self.width = self.metadata[color_stream]["width"]
+        self.height = self.metadata[color_stream]["height"]
+        self.w, self.h = self.width, self.height # need ?
+        self.fovx = focal2fov(self.fx, self.width)
+        self.fovy = focal2fov(self.fy, self.height)
+        self.K = np.array(
+            [[self.fx, 0.0, self.cx], [0.0, self.fy, self.cy], [0.0, 0.0, 1.0]]
+        )
+        self.disorted = True
+        self.dist_coeffs = np.array(
+            [
+                self.metadata[color_stream]["k1"],
+                self.metadata[color_stream]["k2"],
+                self.metadata[color_stream]["p1"],
+                self.metadata[color_stream]["p2"],
+                self.metadata[color_stream]["k3"],
+            ]
+        )
+        self.map1x, self.map1y = cv2.initUndistortRectifyMap(
+            self.K,
+            self.dist_coeffs,
+            np.eye(3),
+            self.K,
+            (self.width, self.height),
+            cv2.CV_32FC1,
+        )
+
+        self.has_depth = config["Rover"]["has_depth"]
+        if self.has_depth:
+            depth_stream = config["Rover"]["depth_stream_name"]
+            assert self.metadata[depth_stream]["isEnable"]
+            assert self.metadata[depth_stream]["isSaveImage"]
+            self.depth_scale = None # probably 1000mm if gemini335L
+            self.width_d = self.metadata[depth_stream]["width"]
+            self.height_d = self.metadata[depth_stream]["height"]
+            self.value_scale = config["Rover"]["value_scale"]
+
+    def __getitem__(self, idx):
+        color_img = self.color_imgs[idx]
+        depth_img = None
+        pose = torch.eye(4, device=self.device, dtype=self.dtype)
+
+        if self.has_depth:
+            depth_img = self.depth_imgs[idx]
+            depth_img = np.array(depth_img) / 1000.0 * self.value_scale
+            if self.width_d != self.width:
+                depth_img = cv2.resize(depth_img, (self.width, self.height))
+
+        if self.disorted:
+            color_img = cv2.remap(color_img, self.map1x, self.map1y, cv2.INTER_LINEAR)
+
+        color_img = (
+            torch.from_numpy(color_img / 255.0)
+            .clamp(0.0, 1.0)
+            .permute(2, 0, 1)
+            .to(device=self.device, dtype=self.dtype)
+        )
+
+        return color_img, depth_img, pose
+
+
 def load_dataset(args, path, config):
     if config["Dataset"]["type"] == "tum":
         return TUMDataset(args, path, config)
@@ -628,5 +765,7 @@ def load_dataset(args, path, config):
         return RosDepthDataset(args, path, config)
     elif config["Dataset"]["type"] == "ros_mono":
         return RosMonoDataset(args, path, config)
+    elif config["Dataset"]["type"] == "rover":
+        return Rover(args, path, config)
     else:
         raise ValueError("Unknown dataset type")
