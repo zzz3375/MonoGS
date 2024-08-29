@@ -12,3 +12,6 @@ RUN apt-get update && apt-get install -y \
     libc6 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+RUN git clone https://github.com/tauzn-clock/MonoGS/ --recursive
+WORKDIR /MonoGS
+RUN pip3 install -r requirement.txt
