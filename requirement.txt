@@ -1,8 +1,8 @@
-submodules/diff-gaussian-rasterization
-submodules/simple-knn
 torch==2.4.0
 torchmetrics==1.4.1 
 opencv-python==4.8.1.78
+submodules/diff-gaussian-rasterization
+submodules/simple-knn
 munch==4.0.0 
 trimesh==4.4.7 
 evo==1.11.0
