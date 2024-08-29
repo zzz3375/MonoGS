@@ -1,0 +1,4 @@
+submodules/diff-gaussian-rasterization
+submodules/simple-knn
+torch==2.4.0
+PyQt5==5.15.11 
