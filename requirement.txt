@@ -13,3 +13,4 @@ wandb==0.17.8
 lpips==0.1.4 
 rich==13.8.0 
 ruff==0.6.2 
+plyfile==1.0.3
