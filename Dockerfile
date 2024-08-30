@@ -3,6 +3,7 @@ FROM nvidia/cuda:12.1.1-devel-ubuntu20.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DISPLAY :0
 ENV TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9"
+ENV NVIDIA_DRIVER_CAPABILITIES="all"
 
 RUN apt-get update && apt-get install -y \
     lsb-release \
