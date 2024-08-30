@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     freeglut3-dev \
     mesa-utils \
+    libxmu-dev \
+    libxi-dev \
     git \
     python3 \
     python3-dev \
