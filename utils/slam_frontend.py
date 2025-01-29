@@ -8,7 +8,7 @@ from gaussian_splatting.gaussian_renderer import render
 from gaussian_splatting.utils.graphics_utils import getProjectionMatrix2, getWorld2View2
 from gui import gui_utils
 from utils.camera_utils import Camera
-from utils.eval_utils import eval_ate, save_gaussians
+from utils.eval_utils import save_gaussians, eval_trajectory
 from utils.logging_utils import Log
 from utils.multiprocessing_utils import clone_obj
 from utils.pose_utils import update_pose
@@ -346,7 +346,7 @@ class FrontEnd(mp.Process):
                 tic.record()
                 if cur_frame_idx >= len(self.dataset):
                     if self.save_results:
-                        eval_ate(
+                        eval_trajectory(
                             self.cameras,
                             self.kf_indices,
                             self.save_dir,
@@ -465,7 +465,7 @@ class FrontEnd(mp.Process):
                     and len(self.kf_indices) % self.save_trj_kf_intv == 0
                 ):
                     Log("Evaluating ATE at frame: ", cur_frame_idx)
-                    eval_ate(
+                    eval_trajectory(
                         self.cameras,
                         self.kf_indices,
                         self.save_dir,
