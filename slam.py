@@ -8,6 +8,7 @@ import torch
 import torch.multiprocessing as mp
 import yaml
 from munch import munchify
+from evo.core import metrics
 
 import wandb
 from gaussian_splatting.scene.gaussian_model import GaussianModel
@@ -15,7 +16,7 @@ from gaussian_splatting.utils.system_utils import mkdir_p
 from gui import gui_utils, slam_gui
 from utils.config_utils import load_config
 from utils.dataset import load_dataset
-from utils.eval_utils import eval_ate, eval_rendering, save_gaussians
+from utils.eval_utils import eval_rendering, save_gaussians, eval_trajectory
 from utils.logging_utils import Log
 from utils.multiprocessing_utils import FakeQueue
 from utils.slam_backend import BackEnd
@@ -121,7 +122,7 @@ class SLAM:
         if self.eval_rendering:
             self.gaussians = self.frontend.gaussians
             kf_indices = self.frontend.kf_indices
-            ATE = eval_ate(
+            ATE = eval_trajectory(
                 self.frontend.cameras,
                 self.frontend.kf_indices,
                 self.save_dir,
@@ -140,14 +141,17 @@ class SLAM:
                 kf_indices=kf_indices,
                 iteration="before_opt",
             )
-            columns = ["tag", "psnr", "ssim", "lpips", "RMSE ATE", "FPS"]
+            columns = ["tag", "psnr", "ssim", "lpips", "RMSE ATE_TRANS", "RMSE RTE_TRANS", "FPS"]
             metrics_table = wandb.Table(columns=columns)
             metrics_table.add_data(
                 "Before",
                 rendering_result["mean_psnr"],
                 rendering_result["mean_ssim"],
                 rendering_result["mean_lpips"],
-                ATE,
+                ATE["APE"][str(metrics.PoseRelation.translation_part)],
+                # ATE["APE"][str(metrics.PoseRelation.rotation_angle_rad)],
+                ATE["RPE"][str(metrics.PoseRelation.translation_part)],
+                # ATE["RPE"][str(metrics.PoseRelation.rotation_angle_rad)],
                 FPS,
             )
 
@@ -180,7 +184,10 @@ class SLAM:
                 rendering_result["mean_psnr"],
                 rendering_result["mean_ssim"],
                 rendering_result["mean_lpips"],
-                ATE,
+                ATE["APE"][str(metrics.PoseRelation.translation_part)],
+                # ATE["APE"][str(metrics.PoseRelation.rotation_angle_rad)],
+                ATE["RPE"][str(metrics.PoseRelation.translation_part)],
+                # ATE["RPE"][str(metrics.PoseRelation.rotation_angle_rad)],
                 FPS,
             )
             wandb.log({"Metrics": metrics_table})
@@ -247,7 +254,10 @@ if __name__ == "__main__":
             mode=None if config["Results"]["use_wandb"] else "disabled",
         )
         wandb.define_metric("frame_idx")
-        wandb.define_metric("ate*", step_metric="frame_idx")
+        wandb.define_metric("ate_trans*", step_metric="frame_idx")
+        # wandb.define_metric("ate_rot*", step_metric="fram_idx")
+        wandb.define_metric("rte_trans*", step_metric="fram_idx")
+        # wandb.define_metric("rte_rot*", step_metric="fram_idx")
 
     slam = SLAM(config, save_dir=save_dir)
 
