@@ -6,7 +6,7 @@ Results:
   save_trj_kf_intv: 5
   use_gui: True
   eval_rendering: False
-  use_wandb: False
+  use_wandb: True
 
 Dataset:
   type: 'tum'
@@ -45,6 +45,7 @@ Training:
   prune_mode: 'slam'
   single_thread: False
   spherical_harmonics: False
+  n_pyramid_levels: 4
   lr:
     cam_rot_delta: 0.003
     cam_trans_delta: 0.001
