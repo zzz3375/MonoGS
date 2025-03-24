@@ -45,6 +45,65 @@ The method demonstrates the first monocular SLAM solely based on 3D Gaussian Spl
 - **[New]** Speed-up version of our code is available in `dev.speedup` branch, It achieves up to 10fps on monocular fr3/office sequence while keeping consistent performance (tested on RTX4090/i9-12900K). The code will be merged into the main branch after further refactoring and testing.
 
 # Getting Started
+
+## Installation (as of 2025-03-24)
+
+First edit `backward.cu` in the submodule `diff-gaussian-rasterization` and replace `render_cuda_reduce_sum` to be this:
+
+```
+template <typename group_t, typename... Lists>
+__device__ void render_cuda_reduce_sum(group_t g, Lists... lists) {
+  int lane = g.thread_rank();
+  g.sync();
+
+  for (int i = g.size() / 2; i > 0; i /= 2) {
+    // Fix: Replace fold expression with explicit calls for each parameter
+    using expander = int[];
+    (void)expander{0, (reduce_helper(lane, i, lists), 0)...};
+    g.sync();
+  }
+}
+```
+
+Then edit `environment.yml`:
+
+```
+# ADD (instead of 11.7 which doesn't exist):
+  - pip install cudatoolkit==11.8
+# MAYBE (untested) (or install these one at a time via pip as I do below):
+  - torch=1.13.1 --index-url https://download.pytorch.org/whl/cu117
+  - torchaudio=0.12.1 --index-url https://download.pytorch.org/whl/cu117
+  - torchvision=0.13.1 --index-url https://download.pytorch.org/whl/cu117
+# COMMENT OUT:
+  - pip:
+    - submodules/simple-knn
+    - submodules/diff-gaussian-rasterization
+```
+
+Then run these commands:
+
+```
+conda remove --name MonoGS --all
+
+conda env create -f environment.yml
+
+conda activate MonoGS
+
+pip install torchaudio --index-url https://download.pytorch.org/whl/cu117
+pip install torchvision --index-url https://download.pytorch.org/whl/cu117
+pip install torch --index-url https://download.pytorch.org/whl/cu117
+
+# Confirm we have good torch installed:
+
+python -c "import torch; print('CUDA Available:', torch.cuda.is_available()); print('CUDA Version:', torch.version.cuda)"
+
+pip install ninja --upgrade
+
+pip install -v ./submodules/simple-knn
+
+pip install -v ./submodules/diff-gaussian-rasterization
+```
+
 ## Installation
 ```
 git clone https://github.com/muskie82/MonoGS.git --recursive
