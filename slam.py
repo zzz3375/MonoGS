@@ -6,13 +6,12 @@ from datetime import datetime
 
 import torch
 import torch.multiprocessing as mp
-import yaml
-from munch import munchify
-
 import wandb
+import yaml
 from gaussian_splatting.scene.gaussian_model import GaussianModel
 from gaussian_splatting.utils.system_utils import mkdir_p
 from gui import gui_utils, slam_gui
+from munch import munchify
 from utils.config_utils import load_config
 from utils.dataset import load_dataset
 from utils.eval_utils import eval_ate, eval_rendering, save_gaussians
@@ -244,7 +243,7 @@ if __name__ == "__main__":
             project="MonoGS",
             name=f"{tmp}_{current_datetime}",
             config=config,
-            mode=None if config["Results"]["use_wandb"] else "disabled",
+            mode="online" if config["Results"]["use_wandb"] else "offline",
         )
         wandb.define_metric("frame_idx")
         wandb.define_metric("ate*", step_metric="frame_idx")
