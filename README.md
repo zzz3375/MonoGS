@@ -48,35 +48,47 @@ The method demonstrates the first monocular SLAM solely based on 3D Gaussian Spl
 
 ## Installation (Docker)
 
-1. Check what CUDA version you have via `nvcc --version`
+1. Install Docker and CUDA.
 
-2. Edit the `Dockerfile` to use the correct CUDA version.  (e.g. 11.7)
+2. If on Windows, also install VcXsrv and launch it (`xlaunch`) on display `:0`.
 
-3. In a command prompt in Windows or Linux, enter the following:
+3. Check what CUDA version you have via `nvcc --version`
 
-```powershell
+4. Edit the `Dockerfile` to use the correct CUDA version.  (e.g. 11.7)
+
+5. In a command prompt, enter the following:
+
+```bash
 git clone https://github.com/muskie82/MonoGS.git --recursive
 cd MonoGS
-docker build -t monogs .
-docker run --gpus=all --rm -it monogs bash
+docker-compose run monogs
 
-# Double-check that CUDA is available
+# Double-check that CUDA is available inside the container
 python3 -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
+```
+
+Alternatively, to avoid using docker-compose, just run:
+
+```bash
+docker build -t monogs .
+docker run --gpus=all --rm -it -v "datasets:/MonoGS/datasets" -e DISPLAY=host.docker.internal:0 monogs bash
 ```
 
 ## Installation (conda)
 
 _Note that this ONLY works in Linux (Windows will appear to work but has a Linalg bug)_
 
-1. Check what CUDA version you have via `nvcc --version`
+1. Install conda and CUDA.
 
-2. Open `environment.yml` and change the dependency version of pytorch/cudatoolkit in `environment.yml` by following [this document](https://pytorch.org/get-started/previous-versions/).
+2. Check what CUDA version you have via `nvcc --version`
+
+3. Open `environment.yml` and change the dependency version of pytorch/cudatoolkit in `environment.yml` by following [this document](https://pytorch.org/get-started/previous-versions/).
 
 Our test setup was:
 - Ubuntu 20.04: `pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6`
 - Ubuntu 18.04: `pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.3`
 
-3. In a command prompt, enter the following:
+4. In a command prompt, enter the following:
 
 ```bash
 conda env create -f environment.yml
