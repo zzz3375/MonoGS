@@ -46,86 +46,50 @@ The method demonstrates the first monocular SLAM solely based on 3D Gaussian Spl
 
 # Getting Started
 
-## Installation (as of 2025-03-24)
+## Installation (Docker)
 
-First edit `backward.cu` in the submodule `diff-gaussian-rasterization` and replace `render_cuda_reduce_sum` to be this:
+1. Check what CUDA version you have via `nvcc --version`
 
-```
-template <typename group_t, typename... Lists>
-__device__ void render_cuda_reduce_sum(group_t g, Lists... lists) {
-  int lane = g.thread_rank();
-  g.sync();
+2. Edit the `Dockerfile` to use the correct CUDA version.  (e.g. 11.7)
 
-  for (int i = g.size() / 2; i > 0; i /= 2) {
-    // Fix: Replace fold expression with explicit calls for each parameter
-    using expander = int[];
-    (void)expander{0, (reduce_helper(lane, i, lists), 0)...};
-    g.sync();
-  }
-}
-```
+3. In a command prompt in Windows or Linux, enter the following:
 
-Then edit `environment.yml`:
-
-```
-# ADD (instead of 11.7 which doesn't exist):
-  - pip install cudatoolkit==11.8
-# MAYBE (untested) (or install these one at a time via pip as I do below):
-  - torch=1.13.1 --index-url https://download.pytorch.org/whl/cu117
-  - torchaudio=0.12.1 --index-url https://download.pytorch.org/whl/cu117
-  - torchvision=0.13.1 --index-url https://download.pytorch.org/whl/cu117
-# COMMENT OUT:
-  - pip:
-    - submodules/simple-knn
-    - submodules/diff-gaussian-rasterization
-```
-
-Then run these commands:
-
-```
-conda remove --name MonoGS --all
-
-conda env create -f environment.yml
-
-conda activate MonoGS
-
-pip install torchaudio --index-url https://download.pytorch.org/whl/cu117
-pip install torchvision --index-url https://download.pytorch.org/whl/cu117
-pip install torch --index-url https://download.pytorch.org/whl/cu117
-
-# Confirm we have good torch installed:
-
-python -c "import torch; print('CUDA Available:', torch.cuda.is_available()); print('CUDA Version:', torch.version.cuda)"
-
-pip install ninja --upgrade
-
-pip install -v ./submodules/simple-knn
-
-pip install -v ./submodules/diff-gaussian-rasterization
-```
-
-## Installation
-```
+```powershell
 git clone https://github.com/muskie82/MonoGS.git --recursive
 cd MonoGS
-```
-Setup the environment.
+docker build -t monogs .
+docker run --gpus=all --rm -it monogs bash
 
+# Double-check that CUDA is available
+python3 -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
 ```
-conda env create -f environment.yml
-conda activate MonoGS
-```
-Depending on your setup, please change the dependency version of pytorch/cudatoolkit in `environment.yml` by following [this document](https://pytorch.org/get-started/previous-versions/).
 
-Our test setup were:
+## Installation (conda)
+
+_Note that this ONLY works in Linux (Windows will appear to work but has a Linalg bug)_
+
+1. Check what CUDA version you have via `nvcc --version`
+
+2. Open `environment.yml` and change the dependency version of pytorch/cudatoolkit in `environment.yml` by following [this document](https://pytorch.org/get-started/previous-versions/).
+
+Our test setup was:
 - Ubuntu 20.04: `pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6`
 - Ubuntu 18.04: `pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.3`
 
-## Quick Demo
+3. In a command prompt, enter the following:
+
+```bash
+conda env create -f environment.yml
+conda activate MonoGS
 ```
+
+## Quick Demo
+
+```bash
 bash scripts/download_tum.sh
 python slam.py --config configs/mono/tum/fr3_office.yaml
 ```
+
 You will see a GUI window pops up.
 
 ## Downloading Datasets
@@ -145,9 +109,8 @@ bash scripts/download_replica.sh
 bash scripts/download_euroc.sh
 ```
 
-
-
 ## Run
+
 ### Monocular
 ```bash
 python slam.py --config configs/mono/tum/fr3_office.yaml
@@ -165,7 +128,6 @@ Or the single process version as
 ```bash
 python slam.py --config configs/rgbd/replica/office0_sp.yaml
 ```
-
 
 ### Stereo (experimental)
 ```bash
