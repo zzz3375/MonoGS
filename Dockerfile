@@ -22,16 +22,15 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/tauzn-clock/MonoGS/ --recursive
-WORKDIR /MonoGS
+# Alias python3 -> python for convenience
+RUN ln -s $(which python3) /usr/bin/python
 
 RUN pip install --upgrade pip
 RUN pip install torchaudio --index-url https://download.pytorch.org/whl/cu117 
 RUN pip install torchvision --index-url https://download.pytorch.org/whl/cu117
 RUN pip install torch --index-url https://download.pytorch.org/whl/cu117
 # Confirm we have good torch installed:
-RUN echo "message11"
-RUN python3 -c "import torch; print('CUDA Available:', torch.cuda.is_available()); print('CUDA Version:', torch.version.cuda)"
+RUN python3 -c "import torch; print('CUDA Available:', torch.cuda.is_available());
 
 RUN pip install --default-timeout=600 \
     torchmetrics==1.4.1 \
@@ -53,8 +52,8 @@ RUN pip install --default-timeout=600 \
 # Building the submodules requires ninja
 RUN pip install ninja --upgrade
 
+RUN git clone https://github.com/tauzn-clock/MonoGS/ --recursive
+WORKDIR /MonoGS
+
 RUN pip install submodules/diff-gaussian-rasterization
 RUN pip install submodules/simple-knn
-
-# Alias python3 -> python for convenience
-RUN ln -s $(which python3) /usr/bin/python
