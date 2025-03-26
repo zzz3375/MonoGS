@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.7.1-devel-ubuntu20.04
+FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DISPLAY=:0
 ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6"
@@ -25,11 +25,12 @@ RUN apt-get update && apt-get install -y \
 
 # Alias python3 -> python for convenience
 RUN ln -s $(which python3) /usr/bin/python
-
 RUN pip install --upgrade pip
-RUN pip install torchaudio --index-url https://download.pytorch.org/whl/cu117 
-RUN pip install torchvision --index-url https://download.pytorch.org/whl/cu117
-RUN pip install torch --index-url https://download.pytorch.org/whl/cu117
+
+# Update PyTorch installations to use CUDA 11.8
+RUN pip install torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torchvision --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torch --index-url https://download.pytorch.org/whl/cu118
 
 RUN pip install --default-timeout=600 \
     torchmetrics==1.4.1 \

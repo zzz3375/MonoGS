@@ -46,6 +46,10 @@ The method demonstrates the first monocular SLAM solely based on 3D Gaussian Spl
 
 # Getting Started
 
+Note that you need a CUDA Driver installed appropriate for your GPU.
+
+https://docs.nvidia.com/ai-enterprise/deployment/bare-metal/latest/docker.html
+
 ## Installation (Docker)
 
 1. Install Docker and CUDA.
@@ -54,7 +58,7 @@ The method demonstrates the first monocular SLAM solely based on 3D Gaussian Spl
 
 3. Check what CUDA version you have via `nvcc --version`
 
-4. Edit the `Dockerfile` to use the correct CUDA version.  (e.g. 11.7)
+4. Edit the `Dockerfile` to use the correct CUDA version.  (i.e. 11.8)
 
 5. In a command prompt, enter the following:
 
@@ -76,7 +80,7 @@ xclock
 Alternatively, to avoid using docker-compose, just run:
 
 ```bash
-docker build -t monogs .
+docker build -t monogs . --no-cache
 docker run --gpus=all --rm -it -v "datasets:/MonoGS/datasets" -e DISPLAY=host.docker.internal:0 monogs bash
 ```
 
