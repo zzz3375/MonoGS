@@ -33,9 +33,9 @@ RUN apt-get update && apt-get install -y \
 RUN ln -s $(which python3) /usr/bin/python
 RUN pip install --upgrade pip
 RUN pip config set global.timeout 600
-RUN pip install torchaudio==0.12.1 --index-url https://download.pytorch.org/whl/cu118
-RUN pip install torchvision==0.13.1 --index-url https://download.pytorch.org/whl/cu118
-RUN pip install torch==1.12.1 --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torchvision --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torch --index-url https://download.pytorch.org/whl/cu118
 
 RUN pip install \
     torchmetrics==1.4.1 \

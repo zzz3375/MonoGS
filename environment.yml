@@ -4,15 +4,12 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.7.13
-  - cudatoolkit=11.8
+  - python=3.8.16
+  - cudatoolkit=11.7
   - plyfile=0.8.1
-  - pip=22.3.1
+  - pip=22.3.1  
   - tqdm
   - pip:
-    - torch==1.12.1 --extra-index-url https://download.pytorch.org/whl/cu118
-    - torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu118
-    - torchvision==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu118
     - opencv-python==4.8.1.78
     - munch
     - trimesh
@@ -27,5 +24,3 @@ dependencies:
     - lpips
     - rich
     - ruff
-    - submodules/simple-knn
-    - submodules/diff-gaussian-rasterization
