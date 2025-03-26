@@ -4,6 +4,10 @@ ENV DISPLAY=:0
 ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6"
 ENV NVIDIA_DRIVER_CAPABILITIES="all"
 
+# Add PPA for newer Mesa drivers (so we'll get OpenGL>=4.3)
+RUN apt-get update && apt-get install -y software-properties-common
+RUN add-apt-repository ppa:kisak/kisak-mesa
+
 RUN apt-get update && apt-get install -y \
     lsb-release \
     wget \
@@ -12,6 +16,8 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     freeglut3-dev \
     mesa-utils \
+    libgl1-mesa-dev \
+    libglu1-mesa-dev \
     libxmu-dev \
     libxi-dev \
     git \
@@ -26,15 +32,17 @@ RUN apt-get update && apt-get install -y \
 # Alias python3 -> python for convenience
 RUN ln -s $(which python3) /usr/bin/python
 RUN pip install --upgrade pip
+RUN pip config set global.timeout 600
+RUN pip install torchaudio==0.12.1 --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torchvision==0.13.1 --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torch==1.12.1 --index-url https://download.pytorch.org/whl/cu118
 
-# Update PyTorch installations to use CUDA 11.8
-RUN pip install torchaudio --index-url https://download.pytorch.org/whl/cu118
-RUN pip install torchvision --index-url https://download.pytorch.org/whl/cu118
-RUN pip install torch --index-url https://download.pytorch.org/whl/cu118
-
-RUN pip install --default-timeout=600 \
+RUN pip install \
     torchmetrics==1.4.1 \
     opencv-python==4.8.1.78 \
+    urllib3==1.26.15 \
+    chardet==4.0.0 \
+    requests==2.28.2 \
     munch==4.0.0 \
     trimesh==4.4.7 \
     evo==1.11.0 \
@@ -52,8 +60,11 @@ RUN pip install --default-timeout=600 \
 # Building the submodules requires ninja
 RUN pip install ninja --upgrade
 
-RUN git clone https://github.com/tauzn-clock/MonoGS/ --recursive
 WORKDIR /MonoGS
+
+# Alternatively, if you didn't clone the repo on the host machine, run this:
+# RUN git clone https://github.com/tauzn-clock/MonoGS/ --recursive
+COPY . /MonoGS/
 
 RUN pip install submodules/diff-gaussian-rasterization
 RUN pip install submodules/simple-knn

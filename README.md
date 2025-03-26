@@ -46,59 +46,61 @@ The method demonstrates the first monocular SLAM solely based on 3D Gaussian Spl
 
 # Getting Started
 
+## Install GPU Driver (DO THIS FIRST)
+
+1. Install your NVIDIA CUDA driver (install the highest-version driver possible as shown at `nvidia-smi`, since NVIDIA drivers are backward-compatible with CUDA toolkits versions.)
+
 Note that you need a CUDA Driver installed appropriate for your GPU.
 
 https://docs.nvidia.com/ai-enterprise/deployment/bare-metal/latest/docker.html
 
-## Installation (Docker)
+_Note that any CUDA Toolkit installed on the host machine [will not be relevant for Docker](https://docs.nvidia.com/ai-enterprise/deployment/vmware/latest/docker.html), so do what you like._
 
-1. Install Docker Desktop and CUDA (install the highest-version driver possible as shown at `nvidia-smi`)
+## Install via Docker
 
 2. If on Windows:
 
 * install VcXsrv and launch it (`xlaunch`) on display `:0`.
-* [update Windows Subsystem for Linux](https://docs.docker.com/desktop/features/gpu/) via `wsl --update`.
-* 
+* [update Windows Subsystem for Linux](https://docs.docker.com/desktop/features/gpu/) via `wsl --update`; then check your version `wsl --version`; it should be `2.4.13` or higher.
 
-3. Check what CUDA version you have via `nvcc --version`
-
-4. Edit the `Dockerfile` to use the correct CUDA version.  (i.e. 11.8)
-
-5. In a command prompt, enter the following:
+3. In a command prompt, enter the following to build and run the Docker image:
 
 ```bash
-# Check your wsl version
-wsl --version
-# (should be 2.4.13.0 or higher)
-
 git clone https://github.com/muskie82/MonoGS.git --recursive
 cd MonoGS
 docker-compose run monogs
+```
 
-# Double-check that CUDA is available inside the container; should be >= 11.8
-python -c "import torch; print('CUDA Available:', torch.cuda.is_available()); print('CUDA Version:', torch.version.cuda)"
+4. [optional] Check that the installation worked:
 
-# Double-check that the OpenGl version will be sufficient (it must be >= 4.3.0)
+```bash
+# Check that CUDA is available inside the container;
+python -c "import torch; print('CUDA Available:', torch.cuda.is_available());"
+
+# Check the version of CUDA toolkit that's installed
+nvcc --version
+
+# Check that pytorch was built to the correct CUDA
+# toolkit version (from `nvcc --version`)
+python -c "import torch; print('CUDA Version:', torch.version.cuda);"
+
+# Check that the OpenGl version will be sufficient (it must be >= 4.3.0)
 glxinfo | grep "OpenGL version"
 
 # Test that your xlaunch is working (this should pop up a clock)
 xclock
+
+# Test that OpenGL is working (this should animate some gears)
+glxgears
 ```
 
-Alternatively, to avoid using docker-compose, just run:
-
-```bash
-docker build -t monogs . --no-cache
-docker run --gpus=all --rm -it -v "datasets:/MonoGS/datasets" -e DISPLAY=host.docker.internal:0 monogs bash
-```
-
-## Installation (conda)
+## [DEPRECATED] Installation (conda)
 
 _Note that this ONLY works in Linux (Windows will appear to work but has a Linalg bug)_
 
-1. Install conda and CUDA.
+1. [Install conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
-2. Check what CUDA version you have via `nvcc --version`
+2. Install CUDA Toolkit on your host machine; please confirm via `nvcc --version` that it is >= 11.8.
 
 3. Open `environment.yml` and change the dependency version of pytorch/cudatoolkit in `environment.yml` by following [this document](https://pytorch.org/get-started/previous-versions/).
 

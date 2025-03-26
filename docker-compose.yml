@@ -6,6 +6,7 @@ services:
       - DISPLAY=host.docker.internal:0
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
+      - LIBGL_ALWAYS_INDIRECT=1
     volumes:
       - datasets:/MonoGS/datasets      # So the datasets persist between sessions
       - /tmp/.X11-unix:/tmp/.X11-unix  # Mount X11 socket
