@@ -52,9 +52,13 @@ https://docs.nvidia.com/ai-enterprise/deployment/bare-metal/latest/docker.html
 
 ## Installation (Docker)
 
-1. Install Docker and CUDA.
+1. Install Docker Desktop and CUDA (install the highest-version driver possible as shown at `nvidia-smi`)
 
-2. If on Windows, also install VcXsrv and launch it (`xlaunch`) on display `:0`.
+2. If on Windows:
+
+* install VcXsrv and launch it (`xlaunch`) on display `:0`.
+* [update Windows Subsystem for Linux](https://docs.docker.com/desktop/features/gpu/) via `wsl --update`.
+* 
 
 3. Check what CUDA version you have via `nvcc --version`
 
@@ -63,6 +67,10 @@ https://docs.nvidia.com/ai-enterprise/deployment/bare-metal/latest/docker.html
 5. In a command prompt, enter the following:
 
 ```bash
+# Check your wsl version
+wsl --version
+# (should be 2.4.13.0 or higher)
+
 git clone https://github.com/muskie82/MonoGS.git --recursive
 cd MonoGS
 docker-compose run monogs
