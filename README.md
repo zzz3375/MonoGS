@@ -63,8 +63,14 @@ git clone https://github.com/muskie82/MonoGS.git --recursive
 cd MonoGS
 docker-compose run monogs
 
-# Double-check that CUDA is available inside the container
-python3 -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
+# Double-check that CUDA is available inside the container; should be >= 11.8
+python -c "import torch; print('CUDA Available:', torch.cuda.is_available()); print('CUDA Version:', torch.version.cuda)"
+
+# Double-check that the OpenGl version will be sufficient (it must be >= 4.3.0)
+glxinfo | grep "OpenGL version"
+
+# Test that your xlaunch is working (this should pop up a clock)
+xclock
 ```
 
 Alternatively, to avoid using docker-compose, just run:

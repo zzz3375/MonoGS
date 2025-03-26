@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     python3-pip \
     libc6 \
+    x11-apps \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -29,8 +30,6 @@ RUN pip install --upgrade pip
 RUN pip install torchaudio --index-url https://download.pytorch.org/whl/cu117 
 RUN pip install torchvision --index-url https://download.pytorch.org/whl/cu117
 RUN pip install torch --index-url https://download.pytorch.org/whl/cu117
-# Confirm we have good torch installed:
-RUN python3 -c "import torch; print('CUDA Available:', torch.cuda.is_available());
 
 RUN pip install --default-timeout=600 \
     torchmetrics==1.4.1 \
