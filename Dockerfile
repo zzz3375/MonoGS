@@ -1,12 +1,8 @@
-FROM nvidia/cuda:11.8.0-devel-ubuntu20.04
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DISPLAY=:0
-ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6"
+ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.7"
 ENV NVIDIA_DRIVER_CAPABILITIES="all"
-
-# Add PPA for newer Mesa drivers (so we'll get OpenGL>=4.3)
-RUN apt-get update && apt-get install -y software-properties-common
-RUN add-apt-repository ppa:kisak/kisak-mesa
 
 RUN apt-get update && apt-get install -y \
     lsb-release \
@@ -29,13 +25,14 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+HEALTHCHECK CMD nvidia-smi || exit 1
+
 # Alias python3 -> python for convenience
-RUN ln -s $(which python3) /usr/bin/python
-RUN pip install --upgrade pip
+RUN apt-get install -y python-is-python3
+
+RUN pip install --upgrade pip==23.3.1
 RUN pip config set global.timeout 600
-RUN pip install torchaudio --index-url https://download.pytorch.org/whl/cu118
-RUN pip install torchvision --index-url https://download.pytorch.org/whl/cu118
-RUN pip install torch --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 RUN pip install \
     torchmetrics==1.4.1 \

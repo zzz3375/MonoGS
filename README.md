@@ -66,7 +66,7 @@ _Note that any CUDA Toolkit installed on the host machine [will not be relevant 
 3. In a command prompt, enter the following to build and run the Docker image:
 
 ```bash
-git clone https://github.com/muskie82/MonoGS.git --recursive
+git clone https://github.com/MichaelCurrie/MonoGS.git --recursive
 cd MonoGS
 docker-compose run monogs
 ```
