@@ -4,7 +4,9 @@ ENV DISPLAY=:0
 ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.7"
 ENV NVIDIA_DRIVER_CAPABILITIES="all"
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y apt-utils
+
+RUN apt-get install -y \
     lsb-release \
     wget \
     ffmpeg \
@@ -28,7 +30,8 @@ RUN apt-get update && apt-get install -y \
 HEALTHCHECK CMD nvidia-smi || exit 1
 
 # Alias python3 -> python for convenience
-RUN apt-get install -y python-is-python3
+RUN ln -s $(which python3) /usr/bin/python
+# RUN apt-get install -y python-is-python3
 
 RUN pip install --upgrade pip==23.3.1
 RUN pip config set global.timeout 600
