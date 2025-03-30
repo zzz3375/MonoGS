@@ -3,17 +3,17 @@ services:
     build: .
     image: monogs
     environment:
-      - DISPLAY=host.docker.internal:0
+      - DISPLAY=$DISPLAY                  # For Linux
+      # - DISPLAY=host.docker.internal:0  # For Windows/Mac
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
-      - LIBGL_ALWAYS_INDIRECT=1
+      # - LIBGL_ALWAYS_INDIRECT=1
     volumes:
       - datasets:/MonoGS/datasets
       - /tmp/.X11-unix:/tmp/.X11-unix
       # Remove the WSL2 specific mount as you're on AWS, not WSL2
       # - /usr/lib/wsl:/usr/lib/wsl
     command: bash
-    # Use this simpler GPU configuration for Docker Compose v2.3+
     deploy:
       resources:
         reservations:
