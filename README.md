@@ -135,7 +135,7 @@ Our test setup was:
 conda env create -f environment.yml
 conda activate MonoGS
 # Somehow pip gets corrupted "Unable to create process..." so we have to install it:
-python -m pip install --upgrade pip
+python -m pip install pip===22.3.2
 pip cache purge
 pip install torch==2.0.1+cu117 torchvision==0.15.2+cu117 torchaudio==2.0.2+cu117 --index-url https://download.pytorch.org/whl/cu117
 

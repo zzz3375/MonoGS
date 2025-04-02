@@ -7,12 +7,21 @@ services:
       # - DISPLAY=host.docker.internal:0  # For Windows/Mac
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
+      # - LIBGL_ALWAYS_SOFTWARE=1
       # - LIBGL_ALWAYS_INDIRECT=1
+      # - __GL_SYNC_TO_VBLANK=0      # Only needed with hardware rendering
+      #- __GLX_VENDOR_LIBRARY_NAME=mesa
+      # Remove the WSL2 specific mount as you're on AWS, not WSL2
+      # - /usr/lib/wsl:/usr/lib/wsl
     volumes:
       - datasets:/MonoGS/datasets
       - /tmp/.X11-unix:/tmp/.X11-unix
-      # Remove the WSL2 specific mount as you're on AWS, not WSL2
-      # - /usr/lib/wsl:/usr/lib/wsl
+      # - /usr/lib/wsl:/usr/lib/wsl      # For WSL2 NVIDIA driver access      
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - datasets:/MonoGS/datasets      # So the datasets persist between sessions
+      - /tmp/.X11-unix:/tmp/.X11-unix  # Mount X11 socket
     command: bash
     deploy:
       resources:
