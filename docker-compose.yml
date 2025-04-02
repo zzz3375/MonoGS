@@ -1,22 +1,15 @@
 services:
   monogs:
     build: .
-    image: monogs
     environment:
-      - DISPLAY=$DISPLAY                  # For Linux
-      # - DISPLAY=host.docker.internal:0  # For Windows/Mac
+      - DISPLAY=${DISPLAY}             # For Linux
+      - XAUTHORITY=/root/.Xauthority
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
-      # - LIBGL_ALWAYS_SOFTWARE=1
-      # - LIBGL_ALWAYS_INDIRECT=1
-      # - __GL_SYNC_TO_VBLANK=0      # Only needed with hardware rendering
-      #- __GLX_VENDOR_LIBRARY_NAME=mesa
-      # Remove the WSL2 specific mount as you're on AWS, not WSL2
-      # - /usr/lib/wsl:/usr/lib/wsl
     volumes:
-      - datasets:/MonoGS/datasets
       - /tmp/.X11-unix:/tmp/.X11-unix
-      # - /usr/lib/wsl:/usr/lib/wsl      # For WSL2 NVIDIA driver access      
+      - ${HOME}/.Xauthority:/root/.Xauthority:ro
+      - datasets:/MonoGS/datasets
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: bash
@@ -25,7 +18,5 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1  # instead of `count: all` since we have only one
+              count: 1
               capabilities: [gpu]
-volumes:
-  datasets:

@@ -87,7 +87,7 @@ sudo systemctl restart docker
 ```bash
 git clone https://github.com/MichaelCurrie/MonoGS.git --recursive
 cd MonoGS
-docker-compose run monogs
+sudo docker-compose run monogs
 ```
 
 4. [optional] Check that the installation worked:
