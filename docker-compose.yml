@@ -19,9 +19,6 @@ services:
       # - /usr/lib/wsl:/usr/lib/wsl      # For WSL2 NVIDIA driver access      
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    volumes:
-      - datasets:/MonoGS/datasets      # So the datasets persist between sessions
-      - /tmp/.X11-unix:/tmp/.X11-unix  # Mount X11 socket
     command: bash
     deploy:
       resources:
