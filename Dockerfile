@@ -3,9 +3,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV DISPLAY=:0
 # Check here https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#gpu-feature-list
 # for for the mapping.  E.g. AWS g5g.4xlarge uses Tesla T4G GPU, which uses sm_75, which is 
-# CUDA ARCH 7.5.  
+# CUDA ARCH 7.5.  HOWEVER, this is only for building from source.... (won't affect pre-built wheels)
 # ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.7"
-ENV TORCH_CUDA_ARCH_LIST="7.5"
+# ENV TORCH_CUDA_ARCH_LIST="7.5"
 ENV NVIDIA_DRIVER_CAPABILITIES="all"
 ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1

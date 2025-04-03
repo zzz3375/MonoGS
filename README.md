@@ -108,6 +108,9 @@ python -c "import torch; print('CUDA Version:', torch.version.cuda);"
 # Show what config torch was built with
 python -c "import torch; print('CUDA Version:', torch.__config__.show());"
 
+# Test that we can make a tensor on the GPU
+python -c "import torch; x = torch.rand(2, 3, device='cuda'); print('GPU Tensor:', x)"
+
 # Check that the OpenGl version will be sufficient (it must be >= 4.3.0)
 glxinfo | grep "OpenGL version"
 
