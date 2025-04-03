@@ -36,6 +36,10 @@ RUN ln -s $(which python3) /usr/bin/python
 # RUN apt-get install -y python-is-python3
 
 RUN pip install --upgrade pip==23.3.1
+
+# Downgrade numpy to avoid compatibility issues
+RUN pip install "numpy<2"
+
 RUN pip config set global.timeout 600
 RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
