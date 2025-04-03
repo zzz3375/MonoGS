@@ -106,7 +106,7 @@ nvcc --version
 python -c "import torch; print('CUDA Version:', torch.version.cuda);"
 
 # Show what config torch was built with
-python -c "import torch; print('CUDA Version:', torch.__config__.show();"
+python -c "import torch; print('CUDA Version:', torch.__config__.show());"
 
 # Check that the OpenGl version will be sufficient (it must be >= 4.3.0)
 glxinfo | grep "OpenGL version"
