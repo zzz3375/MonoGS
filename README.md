@@ -88,6 +88,8 @@ sudo systemctl restart docker
 git clone https://github.com/MichaelCurrie/MonoGS.git --recursive
 cd MonoGS
 sudo docker-compose run monogs
+# OR:
+sudo docker-compose -f ~/MonoGS/docker-compose.yml run monogs
 ```
 
 4. [optional] Check that the installation worked:
@@ -111,6 +113,10 @@ xclock
 
 # Test that OpenGL is working (this should animate some gears)
 glxgears
+
+# Quick demo of SLAM Splatting
+bash scripts/download_tum.sh
+python slam.py --config configs/mono/tum/fr3_office.yaml
 ```
 
 ## [DEPRECATED] Installation (conda)
