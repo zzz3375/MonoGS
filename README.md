@@ -56,7 +56,7 @@ https://docs.nvidia.com/ai-enterprise/deployment/bare-metal/latest/docker.html
 
 _Note that any CUDA Toolkit installed on the host machine [will not be relevant for Docker](https://docs.nvidia.com/ai-enterprise/deployment/vmware/latest/docker.html), so do what you like._
 
-## Install via Docker
+## Install via Docker on Linux
 
 1. If on Linux:
 
@@ -86,7 +86,7 @@ sudo systemctl restart docker
 3. In a command prompt, enter the following to build and run the Docker image:
 
 ```bash
-git clone https://github.com/MichaelCurrie/MonoGS.git --recursive
+git clone https://github.com/muskie82/MonoGS.git --recursive
 cd MonoGS
 sudo docker compose run monogs
 # OR:
@@ -123,6 +123,18 @@ xclock
 # Test that OpenGL is working (this should animate some gears)
 glxgears
 ```
+
+## Option 2: Setup the environment via conda
+
+```
+conda env create -f environment.yml
+conda activate MonoGS
+```
+Depending on your setup, please change the dependency version of pytorch/cudatoolkit in `environment.yml` by following [this document](https://pytorch.org/get-started/previous-versions/).
+
+Our test setup were:
+- Ubuntu 20.04: `pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6`
+- Ubuntu 18.04: `pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.3`
 
 ## Quick Demo
 

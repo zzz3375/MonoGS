@@ -59,7 +59,7 @@ RUN pip install \
     requests==2.28.2 \
     munch==4.0.0 \
     trimesh==4.4.7 \
-    evo==1.11.0 \
+    evo==1.31.0 \
     open3d==0.18.0 \
     imgviz==1.7.5 \
     PyOpenGL==3.1.7 \
