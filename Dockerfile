@@ -5,7 +5,7 @@ ENV DISPLAY=:0
 # for for the mapping.
 # E.g. AWS g5g.4xlarge uses Tesla T4G GPU, which uses sm_75 = CUDA ARCH 7.5 (pytorch has no wheels for this)
 # E.g. AWS g5.4xlarge  uses      A10G GPU, which uses sm_86 = CUDA ARCH 8.6 (pytorch has wheels for this; good)
-# This one is needed when building the submodules
+# This variable TORCH_CUDA_ARCH_LIST is needed when building the submodules
 # You can find out the architecture via torch.cuda.get_device_capability(0)
 ENV TORCH_CUDA_ARCH_LIST="8.6"
 
