@@ -31,6 +31,7 @@ RUN apt-get install -y \
     python3 \
     python3-dev \
     python3-pip \
+    python3-tk \
     libc6 \
     x11-apps \
     && apt-get clean \
