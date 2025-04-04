@@ -42,8 +42,9 @@ def evaluate_evo(poses_gt, poses_est, plot_dir, label, monocular=False):
     # Create the figure and properly prepare the axis
     plot_mode = plot.PlotMode.xy
     fig = plt.figure(figsize=(8, 8))
-    ax = fig.add_subplot(111)
-    ax = plot.prepare_axis(ax, plot_mode)
+
+    # Let prepare_axis create the axis for us with the right subplot
+    ax = plot.prepare_axis(fig, plot_mode)
     ax.set_title(f"ATE RMSE: {ape_stat}")
 
     # Plot the reference trajectory
