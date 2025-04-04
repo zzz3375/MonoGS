@@ -121,62 +121,6 @@ xclock
 
 # Test that OpenGL is working (this should animate some gears)
 glxgears
-
-# Quick demo of SLAM Splatting
-bash scripts/download_tum.sh
-python slam.py --config configs/mono/tum/fr3_office.yaml
-```
-
-## [DEPRECATED] Installation (conda)
-
-_Note that this ONLY works in Linux (Windows will appear to work but has a Linalg bug)_
-
-1. [Install conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
-
-2. Install CUDA Toolkit on your host machine; please confirm via `nvcc --version` that it is >= 11.8.
-
-3. Open `environment.yml` and change the dependency version of pytorch/cudatoolkit in `environment.yml` by following [this document](https://pytorch.org/get-started/previous-versions/).
-
-Our test setup was:
-- Ubuntu 20.04: `pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.6`
-- Ubuntu 18.04: `pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.3`
-
-4. Install "Desktop development with C++" from Microsoft
-
-5. In a command prompt, enter the following:
-
-```bash
-conda env create -f environment.yml
-conda activate MonoGS
-# Somehow pip gets corrupted "Unable to create process..." so we have to install it:
-python -m pip install pip===22.3.2
-pip cache purge
-pip install torch==2.0.1+cu117 torchvision==0.15.2+cu117 torchaudio==2.0.2+cu117 --index-url https://download.pytorch.org/whl/cu117
-
-# We need to fake the CUDA environment down to 11.8 since:
-# * I installed the latest CUDA 12.8 on my host machine which is hard to change
-# * The Torch team hasn't built wheels to that version yet;
-# * So we build for Torch against cuda-toolkit 11.8 which is fine
-# * But when building the submodules it checks and complains since 
-#   `nvcc --version`` (12.8)
-#   disagrees with the version torch was built against (11.8) orch doesn't have
-# * So we will fake it here:
-
-set DISTUTILS_USE_SDK=1
-set ORIGINAL_CUDA_HOME=%CUDA_HOME%
-set ORIGINAL_CUDA_PATH=%CUDA_PATH%
-set ORIGINAL_TORCH_CUDA_ARCH_LIST=%TORCH_CUDA_ARCH_LIST%
-
-set CUDA_HOME="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7"
-set CUDA_PATH="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7"
-set TORCH_CUDA_ARCH_LIST=7.0;7.5;8.0;8.6
-
-pip install -e submodules/simple-knn
-pip install -e submodules/diff-gaussian-rasterization
-
-set CUDA_HOME=%ORIGINAL_CUDA_HOME%
-set CUDA_PATH=%ORIGINAL_CUDA_PATH%
-set TORCH_CUDA_ARCH_LIST=%ORIGINAL_TORCH_CUDA_ARCH_LIST%
 ```
 
 ## Quick Demo
