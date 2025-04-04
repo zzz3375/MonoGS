@@ -2,10 +2,13 @@ FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DISPLAY=:0
 # Check here https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#gpu-feature-list
-# for for the mapping.  E.g. AWS g5g.4xlarge uses Tesla T4G GPU, which uses sm_75, which is 
-# CUDA ARCH 7.5.  HOWEVER, this is only for building from source.... (won't affect pre-built wheels)
-# ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.7"
-# ENV TORCH_CUDA_ARCH_LIST="7.5"
+# for for the mapping.
+# E.g. AWS g5g.4xlarge uses Tesla T4G GPU, which uses sm_75 = CUDA ARCH 7.5
+# E.g. AWS g5.4xlarge  uses      A10G GPU, which uses sm_86 = CUDA ARCH 8.6
+# This one is needed when building the submudles
+# You can find out the architecture via torch.cuda.get_device_capability(0)
+ENV TORCH_CUDA_ARCH_LIST="8.6"
+
 ENV NVIDIA_DRIVER_CAPABILITIES="all"
 ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1

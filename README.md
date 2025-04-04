@@ -87,16 +87,18 @@ sudo systemctl restart docker
 ```bash
 git clone https://github.com/MichaelCurrie/MonoGS.git --recursive
 cd MonoGS
-sudo docker-compose run monogs
+sudo docker compose run monogs
 # OR:
-sudo docker-compose -f ~/MonoGS/docker-compose.yml run monogs
+sudo docker compose -f ~/MonoGS/docker-compose.yml run monogs
 ```
+
+_Note: do NOT use the `docker-compose` command, which is now deprecated in favour of the modern `docker compose` (no hyphen)._
 
 4. [optional] Check that the installation worked:
 
 ```bash
 # Check that CUDA is available inside the container;
-python -c "import torch; print('CUDA Available:', torch.cuda.is_available());"
+python3 -c "import torch; print('CUDA Available:', torch.cuda.is_available());"
 
 # Check the version of CUDA toolkit that's installed
 nvcc --version
