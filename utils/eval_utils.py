@@ -2,12 +2,12 @@ import json
 import os
 
 import cv2
-import evo
 import numpy as np
 import torch
 import wandb
 from evo.core import metrics, trajectory
 from evo.core.trajectory import PosePath3D
+from evo.tools import plot
 from gaussian_splatting.gaussian_renderer import render
 from gaussian_splatting.utils.image_utils import psnr
 from gaussian_splatting.utils.loss_utils import ssim
@@ -40,19 +40,19 @@ def evaluate_evo(poses_gt, poses_est, plot_dir, label, monocular=False):
         json.dump(ape_stats, f, indent=4)
 
     # Create the figure and properly prepare the axis
-    plot_mode = evo.tools.plot.PlotMode.xy
+    plot_mode = plot.PlotMode.xy
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(111)
-    ax = evo.tools.plot.prepare_axis(ax, plot_mode)
+    ax = plot.prepare_axis(ax, plot_mode)
     ax.set_title(f"ATE RMSE: {ape_stat}")
 
     # Plot the reference trajectory
-    evo.tools.plot.traj(
+    plot.traj(
         ax=ax, plot_mode=plot_mode, traj=traj_ref, style="--", color="gray", label="gt"
     )
 
     # Call traj_colormap with named arguments
-    evo.tools.plot.traj_colormap(
+    plot.traj_colormap(
         ax=ax,
         traj=traj_est_aligned,
         array=ape_metric.error,
