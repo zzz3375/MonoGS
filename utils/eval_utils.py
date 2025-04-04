@@ -5,20 +5,15 @@ import cv2
 import evo
 import numpy as np
 import torch
-from evo.core import metrics, trajectory
-from evo.core.metrics import PoseRelation, Unit
-from evo.core.trajectory import PosePath3D, PoseTrajectory3D
-from evo.tools import plot
-from evo.tools.plot import PlotMode
-from evo.tools.settings import SETTINGS
-from matplotlib import pyplot as plt
-from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
-
 import wandb
+from evo.core import metrics, trajectory
+from evo.core.trajectory import PosePath3D
 from gaussian_splatting.gaussian_renderer import render
 from gaussian_splatting.utils.image_utils import psnr
 from gaussian_splatting.utils.loss_utils import ssim
 from gaussian_splatting.utils.system_utils import mkdir_p
+from matplotlib import pyplot as plt
+from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from utils.logging_utils import Log
 
 
@@ -29,7 +24,6 @@ def evaluate_evo(poses_gt, poses_est, plot_dir, label, monocular=False):
     traj_est_aligned = trajectory.align_trajectory(
         traj_est, traj_ref, correct_scale=monocular
     )
-
     ## RMSE
     pose_relation = metrics.PoseRelation.translation_part
     data = (traj_ref, traj_est_aligned)
@@ -38,7 +32,6 @@ def evaluate_evo(poses_gt, poses_est, plot_dir, label, monocular=False):
     ape_stat = ape_metric.get_statistic(metrics.StatisticsType.rmse)
     ape_stats = ape_metric.get_all_statistics()
     Log("RMSE ATE \[m]", ape_stat, tag="Eval")
-
     with open(
         os.path.join(plot_dir, "stats_{}.json".format(str(label))),
         "w",
@@ -46,22 +39,32 @@ def evaluate_evo(poses_gt, poses_est, plot_dir, label, monocular=False):
     ) as f:
         json.dump(ape_stats, f, indent=4)
 
+    # Create the figure and properly prepare the axis
     plot_mode = evo.tools.plot.PlotMode.xy
-    fig = plt.figure()
-    ax = evo.tools.plot.prepare_axis(fig, plot_mode)
+    fig = plt.figure(figsize=(8, 8))
+    ax = fig.add_subplot(111)
+    ax = evo.tools.plot.prepare_axis(ax, plot_mode)
     ax.set_title(f"ATE RMSE: {ape_stat}")
-    evo.tools.plot.traj(ax, plot_mode, traj_ref, "--", "gray", "gt")
+
+    # Plot the reference trajectory
+    evo.tools.plot.traj(
+        ax=ax, plot_mode=plot_mode, traj=traj_ref, style="--", color="gray", label="gt"
+    )
+
+    # Call traj_colormap with named arguments
     evo.tools.plot.traj_colormap(
-        ax,
-        traj_est_aligned,
-        ape_metric.error,
-        plot_mode,
+        ax=ax,
+        traj=traj_est_aligned,
+        array=ape_metric.error,
+        plot_mode=plot_mode,
         min_map=ape_stats["min"],
         max_map=ape_stats["max"],
+        title="Error Trajectory",
+        fig=fig,
     )
+
     ax.legend()
     plt.savefig(os.path.join(plot_dir, "evo_2dplot_{}.png".format(str(label))), dpi=90)
-
     return ape_stat
 
 
