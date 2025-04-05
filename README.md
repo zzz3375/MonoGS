@@ -79,8 +79,7 @@ sudo systemctl restart docker
 
 2. [If on Windows:]
 
-* Install Amazon DCV
-* [deprecated] install VcXsrv and launch it (`xlaunch`) on display `:0`.
+* Install [Amazon DCV client](https://aws.amazon.com/hpc/dcv/)
 * [update Windows Subsystem for Linux](https://docs.docker.com/desktop/features/gpu/) via `wsl --update`; then check your version `wsl --version`; it should be `2.4.13` or higher.
 
 3. In a command prompt, enter the following to build and run the Docker image:
