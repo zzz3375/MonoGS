@@ -9,7 +9,7 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ${HOME}/.Xauthority:/root/.Xauthority:ro
-      - datasets:/MonoGS/datasets
+      - ./datasets:/MonoGS/datasets
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: bash
