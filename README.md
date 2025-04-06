@@ -45,12 +45,85 @@ The method demonstrates the first monocular SLAM solely based on 3D Gaussian Spl
 - **[New]** Speed-up version of our code is available in `dev.speedup` branch, It achieves up to 10fps on monocular fr3/office sequence while keeping consistent performance (tested on RTX4090/i9-12900K). The code will be merged into the main branch after further refactoring and testing.
 
 # Getting Started
-## Installation
+
+## Install GPU Driver (DO THIS FIRST)
+
+1. Install your NVIDIA CUDA driver (install the highest-version driver possible as shown at `nvidia-smi`, since NVIDIA drivers are backward-compatible with CUDA toolkits versions.)
+
+Note that you need a CUDA Driver installed appropriate for your GPU.
+
+https://docs.nvidia.com/ai-enterprise/deployment/bare-metal/latest/docker.html
+
+_Note that any CUDA Toolkit installed on the host machine [will not be relevant for Docker](https://docs.nvidia.com/ai-enterprise/deployment/vmware/latest/docker.html), so do what you like._
+
+## Install via Docker on Linux
+
+1. If on Linux:
+
+* Install the NVIDIA Container toolkit Docker:
+
+```bash
+# Add the NVIDIA Container toolkit so docker can access the GPU
+# See https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+sudo apt-get update
+sudo apt-get install -y nvidia-container-toolkit
+
+# Configure docker to work with nvidia container toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
 ```
+
+2. [If on Windows:]
+
+* Install [Amazon DCV client](https://aws.amazon.com/hpc/dcv/)
+* [update Windows Subsystem for Linux](https://docs.docker.com/desktop/features/gpu/) via `wsl --update`; then check your version `wsl --version`; it should be `2.4.13` or higher.
+
+3. In a command prompt, enter the following to build and run the Docker image:
+
+```bash
 git clone https://github.com/muskie82/MonoGS.git --recursive
 cd MonoGS
+sudo docker compose run monogs
+# OR:
+sudo docker compose -f ~/MonoGS/docker-compose.yml run monogs
 ```
-Setup the environment.
+
+_Note: do NOT use the `docker-compose` command, which is now deprecated in favour of the modern `docker compose` (no hyphen)._
+
+4. [optional] Check that the installation worked:
+
+```bash
+# Check that CUDA is available inside the container;
+python3 -c "import torch; print('CUDA Available:', torch.cuda.is_available());"
+
+# Check the version of CUDA toolkit that's installed
+nvcc --version
+
+# Check that pytorch was built to the correct CUDA
+# toolkit version (from `nvcc --version`)
+python -c "import torch; print('CUDA Version:', torch.version.cuda);"
+
+# Show what config torch was built with
+python -c "import torch; print('CUDA Version:', torch.__config__.show());"
+
+# Test that we can make a tensor on the GPU
+python -c "import torch; x = torch.rand(2, 3, device='cuda'); print('GPU Tensor:', x)"
+
+# Check that the OpenGl version will be sufficient (it must be >= 4.3.0)
+glxinfo | grep "OpenGL version"
+
+# Test that your xlaunch is working (this should pop up a clock)
+xclock
+
+# Test that OpenGL is working (this should animate some gears)
+glxgears
+```
+
+## Option 2: Setup the environment via conda
 
 ```
 conda env create -f environment.yml
@@ -63,10 +136,12 @@ Our test setup were:
 - Ubuntu 18.04: `pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.3`
 
 ## Quick Demo
-```
+
+```bash
 bash scripts/download_tum.sh
 python slam.py --config configs/mono/tum/fr3_office.yaml
 ```
+
 You will see a GUI window pops up.
 
 ## Downloading Datasets
@@ -86,9 +161,8 @@ bash scripts/download_replica.sh
 bash scripts/download_euroc.sh
 ```
 
-
-
 ## Run
+
 ### Monocular
 ```bash
 python slam.py --config configs/mono/tum/fr3_office.yaml
@@ -106,7 +180,6 @@ Or the single process version as
 ```bash
 python slam.py --config configs/rgbd/replica/office0_sp.yaml
 ```
-
 
 ### Stereo (experimental)
 ```bash
